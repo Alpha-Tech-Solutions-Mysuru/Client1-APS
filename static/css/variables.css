@@ -1,0 +1,25 @@
+:root{
+
+    --primary-color:#00B140;
+
+    --primary-hover:#009739;
+
+    --white:#FFFFFF;
+
+    --light-bg:#F8F9FA;
+
+    --border:#DEE2E6;
+
+    --text:#212529;
+
+    --dark-bg:#1E1E1E;
+
+    --dark-card:#2B2B2B;
+
+    --dark-text:#F8F9FA;
+
+    --border-radius:10px;
+
+    --transition:0.3s;
+
+}

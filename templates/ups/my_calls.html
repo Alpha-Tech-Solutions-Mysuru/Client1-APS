@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Calls
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h3 class="fw-bold mb-1">
+                My Calls
+            </h3>
+
+            <p class="text-muted mb-0">
+                View all assigned service requests
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="row g-3">
+
+        {% for service in calls %}
+
+            <div class="col-12">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    {{ service.client_id }}
+                                </h5>
+
+                                <p class="text-muted mb-0">
+                                    {{ service.customer_name }}
+                                </p>
+
+                            </div>
+
+                            <span class="badge {% if service.closure %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {% if service.closure %}Closed{% else %}Open{% endif %}
+                            </span>
+
+                        </div>
+
+                        <div class="row g-2 mb-3">
+
+                            <div class="col-12">
+                                <small class="text-muted d-block">Work Order</small>
+                                <strong>{{ service.work_order_number|default:"-" }}</strong>
+                            </div>
+
+                            <div class="col-12">
+                                <small class="text-muted d-block">UPS Model</small>
+                                <strong>{{ service.ups_model }}</strong>
+                            </div>
+
+                            <div class="col-12">
+                                <small class="text-muted d-block">Mobile Number</small>
+                                <strong>{{ service.mobile_number }}</strong>
+                            </div>
+
+                        </div>
+
+                        <div class="d-grid gap-2">
+
+                            <a href="{% url 'ups:request_details' service.pk %}" class="btn btn-outline-success">
+                                View Details
+                            </a>
+
+                            {% if not service.closure %}
+                                <a href="{% url 'ups:close_call' service.pk %}" class="btn btn-success">
+                                    Continue Closure
+                                </a>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="col-12">
+
+                <div class="alert alert-info mb-0">
+                    No calls assigned.
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}

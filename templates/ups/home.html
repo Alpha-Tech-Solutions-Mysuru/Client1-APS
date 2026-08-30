@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+Welcome | APS
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="row justify-content-center align-items-center" style="min-height:80vh;">
+
+        <div class="col-lg-5 col-md-7 col-sm-10">
+
+            <div class="card shadow">
+
+                <div class="card-body p-5">
+
+                    <div class="text-center mb-4">
+
+                        <h2 class="fw-bold text-success">
+
+                            Welcome to APS
+
+                        </h2>
+
+                        <p class="text-muted">
+
+                            Alternate Power Supplies
+
+                        </p>
+
+                    </div>
+
+                    <div class="d-grid gap-3">
+
+                        <a href="{% url 'accounts:login' %}" class="btn btn-success btn-lg">
+
+                            <i class="bi bi-person-lock me-2"></i>
+
+                            Admin Login
+
+                        </a>
+
+                        <a href="{% url 'accounts:engineer_login' %}" class="btn btn-outline-success btn-lg">
+
+                            <i class="bi bi-tools me-2"></i>
+
+                            Engineer Login
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

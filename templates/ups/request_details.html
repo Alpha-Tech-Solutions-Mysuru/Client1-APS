@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}
+Service Request Details | {{ service.client_id }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.approval-review-modal .modal-body {
+    padding: 0;
+}
+
+.approval-review-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+}
+
+.approval-review-content {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.approval-review-pane {
+    display: none;
+}
+
+.approval-review-pane.active {
+    display: block;
+}
+
+.approval-review-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    padding: 0.875rem;
+    background: var(--bs-body-bg);
+    height: 100%;
+}
+
+.approval-review-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.35rem;
+}
+
+.approval-review-value {
+    font-size: 1rem;
+    color: var(--bs-body-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.approval-review-image {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+.approval-review-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.approval-review-footer {
+    border-top: 1px solid var(--bs-border-color);
+    padding: 0.875rem 1rem 1rem;
+    background: var(--bs-body-bg);
+}
+
+.approval-review-pagination {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.approval-review-pagination .page-link {
+    min-width: 42px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .approval-review-content {
+        padding: 0.875rem;
+    }
+
+    .approval-review-footer {
+        padding: 0.875rem;
+    }
+
+    .approval-review-pagination .page-link {
+        min-width: 38px;
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Request Details Card -->
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+
+            <span>
+
+                <i class="bi bi-file-earmark-text-fill me-2"></i> Request: {{ service.client_id }}
+
+            </span>
+
+            <span class="badge {% if service.closure and service.closure.approval_status == 'APPROVED' %}bg-light text-success{% elif service.closure %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+
+                {% if service.closure and service.closure.approval_status == 'APPROVED' %}Complete{% elif service.closure %}Pending{% else %}Open{% endif %}
+
+            </span>
+
+        </div>
+
+        <div class="card-body p-4">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Work Order Number</strong>
+
+                    <span class="fs-5 text-body-emphasis">{{ service.work_order_number|default:"-" }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Type Of Call</strong>
+
+                    <span class="fs-5 text-body-emphasis">{{ service.get_type_of_call_display|default:"-" }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Customer Name</strong>
+
+                    <span class="fs-5 text-body-emphasis fw-semibold">{{ service.customer_name }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Customer Email</strong>
+
+                    <span class="fs-5 text-body-emphasis">{{ service.email|default:"-" }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Mobile Number</strong>
+
+                    <span class="fs-5 text-body-emphasis" style="white-space: nowrap;">{{ service.mobile_number }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">UPS Model</strong>
+
+                    <span class="fs-5 text-body-emphasis">{{ service.ups_model }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Serial Number</strong>
+
+                    <span class="fs-5 text-body-emphasis font-monospace">{{ service.serial_number }}</span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Assigned Engineer</strong>
+
+                    <span class="fs-5 text-body-emphasis fw-semibold text-success">
+
+                        {{ service.engineer.first_name }} {{ service.engineer.last_name }} ({{ service.engineer.username }})
+
+                    </span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <strong class="text-muted small d-block">Date Logged</strong>
+
+                    <span class="fs-5 text-body-emphasis">{{ service.created_at|date:"d-m-Y H:i" }}</span>
+
+                </div>
+
+            </div>
+
+            <div class="text-end mt-4">
+
+                {% if request.user.role == 'SUPERADMIN' or request.user.role == 'ADMIN' %}
+
+                {% if service.closure and service.closure.approval_status == 'APPROVED' %}
+
+                <button
+                    type="button"
+                    class="btn btn-outline-primary me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#downloadPdfModal"
+                    data-download-url="{% url 'ups:export_request_pdf' service.pk %}"
+                    data-case-id="{{ service.client_id }}"
+                    data-remaining-days="{{ remaining_days }}">
+
+                    <i class="bi bi-download me-2"></i> Download PDF
+
+                </button>
+
+                {% endif %}
+
+                {% if can_approve_closure %}
+
+                <button
+                    type="button"
+                    class="btn btn-success me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#approvalReviewModal">
+                        <i class="bi bi-check-circle me-2"></i> Approve And Complete
+                </button>
+
+                {% endif %}
+
+                <a href="{% url 'ups:view_form' %}" class="btn btn-secondary">
+
+                    <i class="bi bi-arrow-left me-2"></i> Back
+
+                </a>
+
+                {% else %}
+
+                <a href="{% url 'ups:my_calls' %}" class="btn btn-secondary">
+
+                    <i class="bi bi-arrow-left me-2"></i> Back
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% if can_approve_closure %}
+<div class="modal fade approval-review-modal" id="approvalReviewModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-sm-down">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title mb-1">Review Engineer Submission</h5>
+                    <div class="text-muted small">{{ service.client_id }} | {{ service.customer_name }}</div>
+                </div>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="approval-review-shell">
+
+                    <div class="approval-review-content">
+
+                        <div class="approval-review-pane active" data-step="1">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold mb-3">Page 1 of 6: Request Details</h6>
+                                </div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Case ID</span><div class="approval-review-value">{{ service.client_id }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Work Order</span><div class="approval-review-value">{{ service.work_order_number|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Customer</span><div class="approval-review-value">{{ service.customer_name }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Mobile</span><div class="approval-review-value" style="white-space: nowrap;">{{ service.mobile_number }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Email</span><div class="approval-review-value">{{ service.email|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Type Of Call</span><div class="approval-review-value">{{ service.get_type_of_call_display|default:"-" }}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Address</span><div class="approval-review-value">{{ service.address|default:"-" }}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Complaint Details</span><div class="approval-review-value">{{ service.problem|default:"-" }}</div></div></div>
+                            </div>
+                        </div>
+
+                        <div class="approval-review-pane" data-step="2">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold mb-3">Page 2 of 6: Step 1 Review</h6>
+                                </div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Customer Contacted</span><div class="approval-review-value">{% if service.workflow.step_1_customer_contacted %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Reported Problem Confirmed</span><div class="approval-review-value">{% if service.workflow.step_1_problem_confirmed %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Confirmed Problem Details</span><div class="approval-review-value">{{ service.workflow.step_1_problem_confirmation_notes|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Service Location Confirmed</span><div class="approval-review-value">{% if service.workflow.step_1_location_confirmed %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Confirmed Service Location Details</span><div class="approval-review-value">{{ service.workflow.step_1_location_confirmation_notes|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Site Visit Confirmed</span><div class="approval-review-value">{% if service.workflow.step_1_visit_schedule_confirmed %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Site Visit Date & Time</span><div class="approval-review-value">{{ service.workflow.step_1_visit_schedule_at|date:"d-m-Y H:i"|default:"-" }}</div></div></div>
+                            </div>
+                        </div>
+
+                        <div class="approval-review-pane" data-step="3">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold mb-3">Page 3 of 6: Step 2 Verification</h6>
+                                </div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Equipment Model Number</span><div class="approval-review-value">{{ service.workflow.step_2_model_number|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Equipment Serial Number</span><div class="approval-review-value">{{ service.workflow.step_2_serial_number|default:"-" }}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Complaint Record Match Status</span><div class="approval-review-value">{{ service.workflow.get_step_2_complaint_match_status_display|default:"-" }}</div></div></div>
+                                <div class="col-12">
+                                    <div class="approval-review-card">
+                                        <span class="approval-review-label">Model/Serial Number Label Photo(s)</span>
+                                        {% if service.workflow.get_model_serial_images or service.workflow.step_2_serial_label_photo %}
+                                        <div class="approval-review-image-grid">
+                                            {% for image in service.workflow.get_model_serial_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Model/Serial Label Photo {{ forloop.counter }}" class="approval-review-image">
+                                            </a>
+                                            {% endfor %}
+                                            {% if service.workflow.step_2_serial_label_photo %}
+                                            <a href="{{ service.workflow.step_2_serial_label_photo.url }}" target="_blank">
+                                                <img src="{{ service.workflow.step_2_serial_label_photo.url }}" alt="Serial Label Photo" class="approval-review-image">
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        {% else %}
+                                        <div class="approval-review-value">-</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="approval-review-pane" data-step="4">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold mb-3">Page 4 of 6: Step 3 Inspection</h6>
+                                </div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Problem Analysis</span><div class="approval-review-value">{{ service.workflow.step_3_problem_analysis|default:"-" }}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">System Data</span><div class="approval-review-value">{{ service.workflow.step_3_system_data|default:"-" }}</div></div></div>
+                                <div class="col-12">
+                                    <div class="approval-review-card">
+                                        <span class="approval-review-label">Categories</span>
+                                        <div class="approval-review-value">
+                                            {% if service.workflow.step_3_category_data %}
+                                                {% for row in service.workflow.step_3_category_data %}
+                                                    {% if row.type or row.description %}
+                                                        <div><strong>{{ row.type|default:"-" }}</strong>: {{ row.description|default:"-" }}</div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Additional Observations</span><div class="approval-review-value">{{ service.workflow.step_3_additional_observations|default:"-" }}</div></div></div>
+                            </div>
+                        </div>
+
+                        <div class="approval-review-pane" data-step="5">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold mb-3">Page 5 of 6: Replacement Details</h6>
+                                </div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Replacement Needed</span><div class="approval-review-value">{% if service.workflow.step_4_replacement_required %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Part Status</span><div class="approval-review-value">{{ service.workflow.get_step_4_part_decision_display|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Replaced Part Model Number</span><div class="approval-review-value">{{ service.workflow.step_5_new_part_model_number|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Replaced Part Serial Number</span><div class="approval-review-value">{{ service.workflow.step_5_new_part_serial_number|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6">
+                                    <div class="approval-review-card">
+                                        <span class="approval-review-label">Defective Part Photo</span>
+                                        {% if existing_defective_images %}
+                                        <div class="approval-review-image-grid">
+                                            {% for image in existing_defective_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Defective Part Photo {{ forloop.counter }}" class="approval-review-image">
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <div class="approval-review-value">-</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="approval-review-card">
+                                        <span class="approval-review-label">Replaced Part Photo</span>
+                                        {% if existing_replaced_images %}
+                                        <div class="approval-review-image-grid">
+                                            {% for image in existing_replaced_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Replaced Part Photo {{ forloop.counter }}" class="approval-review-image">
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <div class="approval-review-value">-</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="approval-review-pane" data-step="6">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold mb-3">Page 6 of 6: Final Submission</h6>
+                                </div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Root Cause</span><div class="approval-review-value">{{ service.closure.root_cause|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-6"><div class="approval-review-card"><span class="approval-review-label">Action Taken</span><div class="approval-review-value">{{ service.closure.action_taken|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-4"><div class="approval-review-card"><span class="approval-review-label">UPS Operational Verified</span><div class="approval-review-value">{% if service.closure.ups_operational_verified %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12 col-md-4"><div class="approval-review-card"><span class="approval-review-label">Working Condition Demonstrated</span><div class="approval-review-value">{% if service.closure.working_condition_demonstrated %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12 col-md-4"><div class="approval-review-card"><span class="approval-review-label">Out Of Scope</span><div class="approval-review-value">{% if service.closure.out_of_scope_reported %}Yes{% else %}No{% endif %}</div></div></div>
+                                <div class="col-12 col-md-4"><div class="approval-review-card"><span class="approval-review-label">Customer Name</span><div class="approval-review-value">{{ service.closure.customer_signature_name|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-4"><div class="approval-review-card"><span class="approval-review-label">Customer Mobile</span><div class="approval-review-value" style="white-space: nowrap;">{{ service.closure.customer_mobile_number|default:"-" }}</div></div></div>
+                                <div class="col-12 col-md-4"><div class="approval-review-card"><span class="approval-review-label">Customer Email</span><div class="approval-review-value">{{ service.closure.customer_email|default:"-" }}</div></div></div>
+                                <div class="col-12"><div class="approval-review-card"><span class="approval-review-label">Engineer Remarks</span><div class="approval-review-value">{{ service.closure.engineer_remarks|default:"-" }}</div></div></div>
+                                <div class="col-12">
+                                    <div class="approval-review-card">
+                                        <span class="approval-review-label">Installation Image(s) / Site Photo(s)</span>
+                                        {% if service.closure.get_installation_images %}
+                                        <div class="approval-review-image-grid">
+                                            {% for image in service.closure.get_installation_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Installation Image {{ forloop.counter }}" class="approval-review-image">
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <div class="approval-review-value">-</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <form method="post" action="{% url 'ups:approve_call_closure' service.pk %}">
+                                        {% csrf_token %}
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="bi bi-check-circle me-2"></i> Approve And Complete
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="approval-review-footer">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="text-muted small text-center" id="approvalReviewStepLabel">Page 1 of 6</div>
+                            <nav aria-label="Approval review steps">
+                                <ul class="pagination justify-content-center mb-0 approval-review-pagination">
+                                    <li class="page-item disabled" data-review-nav="prev"><button class="page-link" type="button">Prev</button></li>
+                                    <li class="page-item active" data-review-page="1"><button class="page-link" type="button">1</button></li>
+                                    <li class="page-item" data-review-page="2"><button class="page-link" type="button">2</button></li>
+                                    <li class="page-item" data-review-page="3"><button class="page-link" type="button">3</button></li>
+                                    <li class="page-item" data-review-page="4"><button class="page-link" type="button">4</button></li>
+                                    <li class="page-item" data-review-page="5"><button class="page-link" type="button">5</button></li>
+                                    <li class="page-item" data-review-page="6"><button class="page-link" type="button">6</button></li>
+                                    <li class="page-item" data-review-nav="next"><button class="page-link" type="button">Next</button></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+
+{% if service.closure %}
+<div class="modal fade" id="downloadPdfModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Download Service PDF</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <p class="mb-2">
+                    <strong>Case ID:</strong>
+                    <span id="downloadPdfCaseId">{{ service.client_id }}</span>
+                </p>
+
+                <p class="mb-3">
+                    We are planning to have 1 week of this data after that auto delete to maintain storage.
+                </p>
+
+                <div class="alert alert-info mb-3">
+                    Remaining days:
+                    <strong id="downloadPdfRemainingDays">{{ remaining_days }}</strong>
+                </div>
+
+                <div class="d-grid">
+                    <a href="{% url 'ups:export_request_pdf' service.pk %}" class="btn btn-success">
+                        <i class="bi bi-download me-2"></i>Download PDF
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if service.closure %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const approvalReviewModal = document.getElementById("approvalReviewModal");
+    const reviewPanes = approvalReviewModal ? Array.from(approvalReviewModal.querySelectorAll(".approval-review-pane")) : [];
+    const reviewPageItems = approvalReviewModal ? Array.from(approvalReviewModal.querySelectorAll("[data-review-page]")) : [];
+    const reviewPrev = approvalReviewModal ? approvalReviewModal.querySelector('[data-review-nav="prev"]') : null;
+    const reviewNext = approvalReviewModal ? approvalReviewModal.querySelector('[data-review-nav="next"]') : null;
+    const reviewStepLabel = document.getElementById("approvalReviewStepLabel");
+    let activeReviewStep = 1;
+
+    function setReviewStep(stepNumber) {
+        if (!approvalReviewModal) {
+            return;
+        }
+
+        activeReviewStep = Math.min(Math.max(stepNumber, 1), reviewPanes.length);
+
+        reviewPanes.forEach(function (pane, index) {
+            pane.classList.toggle("active", index + 1 === activeReviewStep);
+        });
+
+        reviewPageItems.forEach(function (item) {
+            item.classList.toggle("active", Number(item.getAttribute("data-review-page")) === activeReviewStep);
+        });
+
+        if (reviewPrev) {
+            reviewPrev.classList.toggle("disabled", activeReviewStep === 1);
+        }
+
+        if (reviewNext) {
+            reviewNext.classList.toggle("disabled", activeReviewStep === reviewPanes.length);
+        }
+
+        if (reviewStepLabel) {
+            reviewStepLabel.textContent = "Page " + activeReviewStep + " of " + reviewPanes.length;
+        }
+    }
+
+    if (approvalReviewModal) {
+        reviewPageItems.forEach(function (item) {
+            item.addEventListener("click", function () {
+                setReviewStep(Number(item.getAttribute("data-review-page")));
+            });
+        });
+
+        if (reviewPrev) {
+            reviewPrev.addEventListener("click", function () {
+                if (!reviewPrev.classList.contains("disabled")) {
+                    setReviewStep(activeReviewStep - 1);
+                }
+            });
+        }
+
+        if (reviewNext) {
+            reviewNext.addEventListener("click", function () {
+                if (!reviewNext.classList.contains("disabled")) {
+                    setReviewStep(activeReviewStep + 1);
+                }
+            });
+        }
+
+        approvalReviewModal.addEventListener("show.bs.modal", function () {
+            setReviewStep(1);
+        });
+    }
+
+    const downloadModal = document.getElementById("downloadPdfModal");
+
+    if (!downloadModal) {
+        return;
+    }
+
+    const downloadButton = downloadModal.querySelector(".btn.btn-success");
+
+    if (downloadButton) {
+        downloadButton.addEventListener("click", function () {
+            const modalInstance = bootstrap.Modal.getInstance(downloadModal);
+
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

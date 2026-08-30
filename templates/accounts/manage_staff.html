@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}
+Manage Staff
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+            <div>
+
+                <h3 class="fw-bold mb-1">
+                    Manage Staff
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Add, update, delete, and review staff accounts
+                </p>
+
+            </div>
+
+            <a href="{% url 'accounts:create_staff' %}" class="btn btn-success">
+                <i class="bi bi-person-plus me-2"></i>Create Staff
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Username</th>
+
+                            <th>Full Name</th>
+
+                            <th>Role</th>
+
+                            <th>Status</th>
+
+                            <th width="220">Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in staff_rows %}
+
+                        <tr>
+
+                            <td>{{ row.user.username }}</td>
+
+                            <td>{{ row.user.first_name }} {{ row.user.last_name }}</td>
+
+                            <td>{{ row.user.get_role_display }}</td>
+
+                            <td>
+                                {% if row.user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+
+                                <div class="d-flex flex-nowrap gap-2 align-items-center">
+
+                                    <button type="button" class="btn btn-outline-success btn-sm btn-action-small" data-bs-toggle="modal" data-bs-target="#viewStaffModal{{ row.user.pk }}">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-action-small" data-bs-toggle="modal" data-bs-target="#editStaffModal{{ row.user.pk }}">
+                                        <i class="bi bi-pencil-square me-1"></i>Edit
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-action-small" data-bs-toggle="modal" data-bs-target="#deleteStaffModal{{ row.user.pk }}">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="5" class="text-center">
+                                No Staff Found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% for row in staff_rows %}
+
+<div class="modal fade" id="viewStaffModal{{ row.user.pk }}" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Staff Summary</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Username</label>
+                    <input type="text" class="form-control" value="{{ row.user.username }}" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Full Name</label>
+                    <input type="text" class="form-control" value="{{ row.user.first_name }} {{ row.user.last_name }}" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <input type="text" class="form-control" value="{{ row.user.email }}" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mobile Number</label>
+                    <input type="text" class="form-control" value="{{ row.user.mobile_number }}" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Role</label>
+                    <input type="text" class="form-control" value="{{ row.user.get_role_display }}" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <input type="text" class="form-control" value="{% if row.user.is_active %}Active{% else %}Inactive{% endif %}" readonly>
+                </div>
+
+                <hr>
+
+                <button type="button" class="btn btn-outline-success w-100 open-password-modal-button" data-user-id="{{ row.user.pk }}" data-password-url="{% url 'accounts:view_staff_password' row.user.pk %}">
+                    <i class="bi bi-key me-2"></i>View Password
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="editStaffModal{{ row.user.pk }}" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Edit Staff</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <form method="post" action="{% url 'accounts:update_staff' row.user.pk %}">
+
+                    {% csrf_token %}
+
+                    <div class="row">
+
+                        {% for field in row.edit_form %}
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="deleteStaffModal{{ row.user.pk }}" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Delete Staff</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+                Delete <strong>{{ row.user.username }}</strong> permanently?
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                <form method="post" action="{% url 'accounts:delete_staff' row.user.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+<div class="modal fade" id="sharedPasswordModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Verify Super Admin Password</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div id="sharedPasswordError" class="alert alert-danger d-none"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Super Admin Password</label>
+                    <input type="password" id="sharedSuperadminPasswordInput" class="form-control" placeholder="Enter super admin password">
+                </div>
+
+                <button type="button" class="btn btn-success w-100" id="sharedVerifyPasswordButton">
+                    View Password
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="sharedPasswordResultModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Staff Login Details</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Username</label>
+                    <input type="text" class="form-control" id="sharedPasswordUsername" readonly>
+                </div>
+
+                <div class="mb-0">
+                    <label class="form-label fw-bold">Password</label>
+                    <input type="text" class="form-control" id="sharedPasswordValue" readonly>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function getCookie(name) {
+        const cookieValue = document.cookie
+            .split("; ")
+            .find(function (row) {
+                return row.startsWith(name + "=");
+            });
+
+        return cookieValue ? decodeURIComponent(cookieValue.split("=")[1]) : "";
+    }
+
+    const sharedPasswordModalElement = document.getElementById("sharedPasswordModal");
+    const sharedResultModalElement = document.getElementById("sharedPasswordResultModal");
+    const sharedPasswordModal = bootstrap.Modal.getOrCreateInstance(sharedPasswordModalElement);
+    const sharedResultModal = bootstrap.Modal.getOrCreateInstance(sharedResultModalElement);
+    const sharedPasswordInput = document.getElementById("sharedSuperadminPasswordInput");
+    const sharedErrorBox = document.getElementById("sharedPasswordError");
+    const sharedVerifyButton = document.getElementById("sharedVerifyPasswordButton");
+    const sharedUsername = document.getElementById("sharedPasswordUsername");
+    const sharedPassword = document.getElementById("sharedPasswordValue");
+
+    let activePasswordUrl = "";
+
+    document.querySelectorAll(".open-password-modal-button").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const userId = button.dataset.userId;
+            const passwordUrl = button.dataset.passwordUrl;
+            const viewModalElement = document.getElementById("viewStaffModal" + userId);
+            const viewModal = bootstrap.Modal.getOrCreateInstance(viewModalElement);
+
+            activePasswordUrl = passwordUrl;
+            sharedPasswordInput.value = "";
+            sharedErrorBox.classList.add("d-none");
+            sharedErrorBox.textContent = "";
+
+            viewModal.hide();
+
+            window.setTimeout(function () {
+                sharedPasswordModal.show();
+            }, 200);
+        });
+    });
+
+    sharedVerifyButton.addEventListener("click", function () {
+        sharedErrorBox.classList.add("d-none");
+        sharedErrorBox.textContent = "";
+
+        if (!sharedPasswordInput.value.trim()) {
+            sharedErrorBox.textContent = "Please enter the super admin password.";
+            sharedErrorBox.classList.remove("d-none");
+            return;
+        }
+
+        sharedVerifyButton.disabled = true;
+        sharedVerifyButton.textContent = "Checking...";
+
+        fetch(activePasswordUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: new URLSearchParams({
+                superadmin_password: sharedPasswordInput.value.trim()
+            })
+        })
+        .then(async function (response) {
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Unable to verify password.");
+            }
+
+            return data;
+        })
+        .then(function (data) {
+            sharedUsername.value = data.username;
+            sharedPassword.value = data.password;
+            sharedPasswordModal.hide();
+
+            window.setTimeout(function () {
+                sharedResultModal.show();
+            }, 200);
+        })
+        .catch(function (error) {
+            sharedErrorBox.textContent = error.message;
+            sharedErrorBox.classList.remove("d-none");
+        })
+        .finally(function () {
+            sharedVerifyButton.disabled = false;
+            sharedVerifyButton.textContent = "View Password";
+        });
+    });
+
+    sharedPasswordModalElement.addEventListener("hidden.bs.modal", function () {
+        sharedPasswordInput.value = "";
+        sharedErrorBox.classList.add("d-none");
+        sharedErrorBox.textContent = "";
+    });
+});
+</script>
+{% endblock %}

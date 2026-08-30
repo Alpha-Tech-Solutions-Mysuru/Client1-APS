@@ -1,0 +1,280 @@
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width:992px){
+
+    main{
+        padding:20px !important;
+    }
+
+    .sidebar-column{
+        flex:0 0 0;
+        width:0;
+        max-width:0;
+        padding:0;
+        overflow:visible;
+    }
+
+    #sidebar{
+        position:fixed;
+        top:0;
+        left:-270px;
+        width:260px;
+        height:100vh;
+        z-index:1060;
+        transition:0.3s;
+        overflow-y:auto;
+    }
+
+    #sidebar.show{
+        left:0;
+    }
+
+    .sidebar-overlay{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,.35);
+        z-index:1059;
+        display:none;
+    }
+
+    .sidebar-overlay.show{
+        display:block;
+    }
+
+    .navbar-brand{
+        font-size:1.3rem;
+    }
+
+    .navbar .container-fluid{
+        position:relative;
+        min-height:44px;
+        justify-content:center;
+    }
+
+    .navbar-actions{
+        position:absolute;
+        top:50%;
+        right:0;
+        z-index:2;
+        transform:translateY(-50%);
+    }
+
+    .navbar-theme-button{
+        width:44px;
+        height:44px;
+        margin-bottom:0;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .nav-welcome{
+        display:none;
+    }
+
+    #menuButton{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        position:absolute;
+        top:50%;
+        left:0;
+        z-index:2;
+        transform:translateY(-50%);
+        margin-right:0 !important;
+        padding-left:0;
+        padding-right:0;
+        width:44px;
+        height:44px;
+    }
+
+    .navbar-brand{
+        position:static;
+        display:block;
+        width:100%;
+        text-align:center;
+        padding:0 48px;
+        transform:none;
+        margin:0;
+    }
+
+    .navbar-brand{
+        display:inline-flex;
+        justify-content:center;
+        align-items:center;
+        gap:8px;
+    }
+
+    .navbar-brand-logo{
+        height:30px;
+    }
+
+    .navbar-login-links{
+        position:absolute;
+        top:calc(100% + 8px);
+        right:0;
+        left:auto;
+        width:min(240px, calc(100vw - 30px));
+        padding:12px;
+        background:var(--white);
+        border:1px solid var(--border);
+        border-radius:10px;
+        box-shadow:0 10px 30px rgba(0,0,0,.12);
+    }
+
+    .navbar-login-links .navbar-nav{
+        flex-direction:column;
+        gap:0;
+    }
+
+    .navbar-login-links .nav-link{
+        padding:8px 0;
+        text-align:left;
+    }
+
+    main.col-md-9,
+    main.col-lg-10{
+        width:100%;
+        margin-left:0 !important;
+    }
+
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width:768px){
+
+    .container,
+    .container-fluid{
+        padding-left:15px;
+        padding-right:15px;
+    }
+
+    .card{
+        margin-bottom:15px;
+    }
+
+    .card-body{
+        padding:18px;
+    }
+
+    .table-responsive{
+        overflow-x:auto;
+    }
+
+    .btn{
+        width:100%;
+        margin-bottom:10px;
+    }
+
+    .btn-group .btn{
+        width:auto;
+        margin-bottom:0;
+    }
+
+    .btn-action-small{
+        width:auto;
+        min-height:30px;
+        margin-bottom:0;
+        padding:2px 8px;
+    }
+
+    .modal-dialog{
+        margin:10px;
+    }
+
+    .toast{
+        min-width:unset;
+        width:calc(100vw - 30px);
+    }
+
+    .app-message-toast{
+        width:calc(100vw - 30px);
+    }
+
+    h1{
+        font-size:1.8rem;
+    }
+
+    h2{
+        font-size:1.6rem;
+    }
+
+    h3{
+        font-size:1.4rem;
+    }
+
+    .navbar-brand{
+        font-size:1.2rem;
+    }
+
+    .navbar-nav .me-3{
+        display:none;
+    }
+
+    .navbar-actions{
+        gap:0.25rem;
+    }
+
+    .sidebar-close-button{
+        width:auto;
+        margin-bottom:0;
+    }
+
+}
+
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width:576px){
+
+    main{
+        padding:15px !important;
+    }
+
+    .card{
+        border-radius:8px;
+    }
+
+    .form-control,
+    .form-select{
+        min-height:44px;
+        font-size:15px;
+    }
+
+    .form-label{
+        margin-bottom:6px;
+    }
+
+    .navbar{
+        padding:10px 15px;
+    }
+
+    .navbar-brand{
+        font-size:1.1rem;
+    }
+
+    .navbar-brand-logo{
+        height:26px;
+    }
+
+    .navbar-login-links{
+        width:min(220px, calc(100vw - 30px));
+        right:0;
+    }
+
+    footer{
+        font-size:14px;
+    }
+
+}

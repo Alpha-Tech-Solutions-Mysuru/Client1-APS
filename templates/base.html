@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem("aps_theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-bs-theme", savedTheme);
+            }
+        })();
+    </script>
+
+    <title>{% block title %}APS{% endblock %}</title>
+
+    <!-- <link rel="icon" href="{% static 'images/logo.png' %}"> -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/dark.css' %}">
+
+    {% block extra_css %}
+
+    {% endblock %}
+
+</head>
+
+<body>
+
+    {% include "components/navbar.html" %}
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            {% if user.is_authenticated %}
+
+                {% include "components/sidebar.html" %}
+
+            {% endif %}
+
+            <main class="{% if user.is_authenticated %}col-lg-10 col-md-9 ms-sm-auto px-4 py-4{% else %}col-12 p-0{% endif %}">
+
+                {% include "components/messages.html" %}
+
+                {% block content %}
+
+                {% endblock %}
+
+            </main>
+
+        </div>
+
+    </div>
+
+    {% if user.is_authenticated %}
+
+        {% include "components/footer.html" %}
+
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{% static 'js/theme.js' %}"></script>
+
+    <script src="{% static 'js/sidebar.js' %}"></script>
+
+    <script src="{% static 'js/main.js' %}"></script>
+
+    {% block extra_js %}
+
+    {% endblock %}
+
+</body>
+
+</html>

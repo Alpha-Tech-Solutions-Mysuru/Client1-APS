@@ -1,0 +1,707 @@
+{% extends "base.html" %}
+
+{% block title %}
+View Service Requests
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width: 767.98px) {
+    .service-request-card {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 1.25rem;
+        padding: 1rem;
+        color: var(--bs-body-color);
+        box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .service-request-avatar {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(var(--bs-success-rgb), 0.12);
+        color: var(--bs-success);
+        flex-shrink: 0;
+    }
+
+    .service-request-id {
+        font-size: 1.5rem;
+        line-height: 1;
+        color: var(--bs-heading-color, var(--bs-body-color));
+        word-break: break-word;
+    }
+
+    .service-request-name {
+        font-size: 1.05rem;
+        color: var(--bs-body-color);
+        word-break: break-word;
+    }
+
+    .service-request-meta {
+        color: var(--bs-secondary-color);
+        font-size: 0.92rem;
+        min-width: 0;
+    }
+
+    .service-request-action {
+        width: 3.6rem;
+        height: 3.2rem;
+        border-radius: 0.9rem;
+        border: 1px solid var(--bs-border-color);
+        background: transparent;
+        color: var(--bs-body-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        text-decoration: none;
+        flex: 0 0 auto;
+    }
+
+    .service-request-status {
+        border-radius: 0.9rem;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+
+    .service-request-status.pending {
+        background: rgba(13, 202, 240, 0.12);
+        color: var(--bs-info);
+        border-color: rgba(13, 202, 240, 0.35);
+    }
+
+    .service-request-status.complete {
+        background: rgba(var(--bs-success-rgb), 0.12);
+        color: var(--bs-success);
+        border-color: rgba(var(--bs-success-rgb), 0.35);
+    }
+
+    .service-request-status.open {
+        background: rgba(255, 193, 7, 0.14);
+        color: var(--bs-warning);
+        border-color: rgba(255, 193, 7, 0.35);
+    }
+
+    .service-request-header {
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .service-request-main {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .service-request-person {
+        gap: 0.75rem;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .service-request-actions {
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+    }
+
+    .service-request-meta-row {
+        min-width: 0;
+    }
+
+    .service-request-meta-row span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+.icon-action-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h3 class="fw-bold">
+
+                Service Requests
+
+            </h3>
+
+            <p class="text-muted">
+
+                View all service requests.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="card shadow d-none d-md-block">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Client ID</th>
+
+                            <th>Customer</th>
+
+                            <th>Mobile</th>
+
+                            <th>Engineer</th>
+
+                            <th>Date</th>
+
+                            <th>Status</th>
+
+                            <th width="180">Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in requests %}
+                        <tr>
+                            <td>{{ row.service.client_id }}</td>
+                            <td>{{ row.service.customer_name }}</td>
+                            <td>{{ row.service.mobile_number }}</td>
+                            <td>{{ row.service.engineer.first_name }}</td>
+                            <td>{{ row.service.created_at|date:"d-m-Y" }}</td>
+                            <td>
+                                {% if row.service.closure %}
+                                    {% if row.service.closure.approval_status == 'APPROVED' %}
+                                    <span class="badge bg-success">Complete</span>
+                                    {% else %}
+                                    <span class="badge bg-info text-dark">Pending</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Open</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-nowrap gap-2 align-items-center">
+                                    <a
+                                        href="{% url 'ups:request_details' row.service.id %}"
+                                        class="btn btn-success btn-sm icon-action-button"
+                                        title="View"
+                                        aria-label="View">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary btn-sm icon-action-button js-edit-request"
+                                        title="Edit"
+                                        aria-label="Edit"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editRequestModal"
+                                        data-edit-url="{% url 'ups:edit_form' row.service.id %}"
+                                        data-client-id="{{ row.service.client_id }}"
+                                        data-work-order-number="{{ row.service.work_order_number }}"
+                                        data-customer-name="{{ row.service.customer_name }}"
+                                        data-mobile-number="{{ row.service.mobile_number }}"
+                                        data-email="{{ row.service.email }}"
+                                        data-address="{{ row.service.address }}"
+                                        data-ups-model="{{ row.service.ups_model }}"
+                                        data-serial-number="{{ row.service.serial_number }}"
+                                        data-type-of-call="{{ row.service.type_of_call }}"
+                                        data-engineer="{{ row.service.engineer_id }}">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    {% if row.service.closure and row.service.closure.approval_status == 'APPROVED' %}
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary btn-sm icon-action-button"
+                                        title="Download PDF"
+                                        aria-label="Download PDF"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#downloadPdfModal"
+                                        data-download-url="{% url 'ups:export_request_pdf' row.service.id %}"
+                                        data-case-id="{{ row.service.client_id }}"
+                                        data-remaining-days="{{ row.remaining_days }}">
+                                        <i class="bi bi-download"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                No Service Requests Found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="d-grid gap-3 d-md-none">
+        {% for row in requests %}
+        {% if row.service.closure %}
+            {% if row.service.closure.approval_status == 'APPROVED' %}
+                {% with status_text="Complete" status_class="complete" %}
+                <div class="service-request-card">
+                    <div class="d-flex justify-content-between service-request-header">
+                        <div class="d-flex service-request-person">
+                            <div class="service-request-avatar">
+                                <i class="bi bi-person fs-1"></i>
+                            </div>
+                            <div class="service-request-main">
+                                <div class="service-request-id fw-bold">{{ row.service.client_id }}</div>
+                                <div class="service-request-name">{{ row.service.customer_name }}</div>
+                                <div class="service-request-meta service-request-meta-row mt-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-telephone"></i>
+                                    <span style="white-space: nowrap;">{{ row.service.mobile_number }}</span>
+                                </div>
+                                <div class="service-request-meta service-request-meta-row mt-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar4"></i>
+                                    <span>{{ row.service.created_at|date:"d M Y" }} &bull; {{ row.service.created_at|date:"h:i A" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="service-request-status {{ status_class }}">{{ status_text }}</span>
+                    </div>
+                    <div class="d-flex justify-content-end service-request-actions mt-4">
+                        <a href="{% url 'ups:request_details' row.service.id %}" class="service-request-action" aria-label="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button
+                            type="button"
+                            class="service-request-action js-edit-request"
+                            aria-label="Edit"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editRequestModal"
+                            data-edit-url="{% url 'ups:edit_form' row.service.id %}"
+                            data-client-id="{{ row.service.client_id }}"
+                            data-work-order-number="{{ row.service.work_order_number }}"
+                            data-customer-name="{{ row.service.customer_name }}"
+                            data-mobile-number="{{ row.service.mobile_number }}"
+                            data-email="{{ row.service.email }}"
+                            data-address="{{ row.service.address }}"
+                            data-ups-model="{{ row.service.ups_model }}"
+                            data-serial-number="{{ row.service.serial_number }}"
+                            data-type-of-call="{{ row.service.type_of_call }}"
+                            data-engineer="{{ row.service.engineer_id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="service-request-action"
+                            aria-label="Download PDF"
+                            data-bs-toggle="modal"
+                            data-bs-target="#downloadPdfModal"
+                            data-download-url="{% url 'ups:export_request_pdf' row.service.id %}"
+                            data-case-id="{{ row.service.client_id }}"
+                            data-remaining-days="{{ row.remaining_days }}">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endwith %}
+            {% else %}
+                {% with status_text="Pending" status_class="pending" %}
+                <div class="service-request-card">
+                    <div class="d-flex justify-content-between service-request-header">
+                        <div class="d-flex service-request-person">
+                            <div class="service-request-avatar">
+                                <i class="bi bi-person fs-1"></i>
+                            </div>
+                            <div class="service-request-main">
+                                <div class="service-request-id fw-bold">{{ row.service.client_id }}</div>
+                                <div class="service-request-name">{{ row.service.customer_name }}</div>
+                                <div class="service-request-meta service-request-meta-row mt-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-telephone"></i>
+                                    <span style="white-space: nowrap;">{{ row.service.mobile_number }}</span>
+                                </div>
+                                <div class="service-request-meta service-request-meta-row mt-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar4"></i>
+                                    <span>{{ row.service.created_at|date:"d M Y" }} &bull; {{ row.service.created_at|date:"h:i A" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="service-request-status {{ status_class }}">{{ status_text }}</span>
+                    </div>
+                    <div class="d-flex justify-content-end service-request-actions mt-4">
+                        <a href="{% url 'ups:request_details' row.service.id %}" class="service-request-action" aria-label="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button
+                            type="button"
+                            class="service-request-action js-edit-request"
+                            aria-label="Edit"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editRequestModal"
+                            data-edit-url="{% url 'ups:edit_form' row.service.id %}"
+                            data-client-id="{{ row.service.client_id }}"
+                            data-work-order-number="{{ row.service.work_order_number }}"
+                            data-customer-name="{{ row.service.customer_name }}"
+                            data-mobile-number="{{ row.service.mobile_number }}"
+                            data-email="{{ row.service.email }}"
+                            data-address="{{ row.service.address }}"
+                            data-ups-model="{{ row.service.ups_model }}"
+                            data-serial-number="{{ row.service.serial_number }}"
+                            data-type-of-call="{{ row.service.type_of_call }}"
+                            data-engineer="{{ row.service.engineer_id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endif %}
+        {% else %}
+            {% with status_text="Open" status_class="open" %}
+            <div class="service-request-card">
+                <div class="d-flex justify-content-between service-request-header">
+                    <div class="d-flex service-request-person">
+                        <div class="service-request-avatar">
+                            <i class="bi bi-person fs-1"></i>
+                        </div>
+                        <div class="service-request-main">
+                            <div class="service-request-id fw-bold">{{ row.service.client_id }}</div>
+                            <div class="service-request-name">{{ row.service.customer_name }}</div>
+                            <div class="service-request-meta service-request-meta-row mt-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-telephone"></i>
+                                <span style="white-space: nowrap;">{{ row.service.mobile_number }}</span>
+                            </div>
+                            <div class="service-request-meta service-request-meta-row mt-2 d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar4"></i>
+                                <span>{{ row.service.created_at|date:"d M Y" }} &bull; {{ row.service.created_at|date:"h:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="service-request-status {{ status_class }}">{{ status_text }}</span>
+                </div>
+                <div class="d-flex justify-content-end service-request-actions mt-4">
+                    <a href="{% url 'ups:request_details' row.service.id %}" class="service-request-action" aria-label="View">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <button
+                        type="button"
+                        class="service-request-action js-edit-request"
+                        aria-label="Edit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editRequestModal"
+                        data-edit-url="{% url 'ups:edit_form' row.service.id %}"
+                        data-client-id="{{ row.service.client_id }}"
+                        data-work-order-number="{{ row.service.work_order_number }}"
+                        data-customer-name="{{ row.service.customer_name }}"
+                        data-mobile-number="{{ row.service.mobile_number }}"
+                        data-email="{{ row.service.email }}"
+                        data-address="{{ row.service.address }}"
+                        data-ups-model="{{ row.service.ups_model }}"
+                        data-serial-number="{{ row.service.serial_number }}"
+                        data-type-of-call="{{ row.service.type_of_call }}"
+                        data-engineer="{{ row.service.engineer_id }}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+            </div>
+            {% endwith %}
+        {% endif %}
+        {% empty %}
+        <div class="card shadow">
+            <div class="card-body text-center">
+                No Service Requests Found.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<div class="modal fade" id="editRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Re-Edited Service Request</h5>
+                    <div class="text-muted small">Update the request and send the revised WhatsApp message.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="editRequestError" class="alert alert-danger d-none"></div>
+                <form method="post" id="editRequestForm">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Case ID *</label>
+                            {{ edit_form.client_id }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Work Order Number *</label>
+                            {{ edit_form.work_order_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Customer Name *</label>
+                            {{ edit_form.customer_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Customer Number *</label>
+                            {{ edit_form.mobile_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Customer Email ID</label>
+                            {{ edit_form.email }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Type Of Call *</label>
+                            {{ edit_form.type_of_call }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Address</label>
+                            {{ edit_form.address }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">UPS Model *</label>
+                            {{ edit_form.ups_model }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">UPS Serial Number *</label>
+                            {{ edit_form.serial_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Engineer *</label>
+                            {{ edit_form.engineer }}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="editRequestSubmitButton" class="btn btn-success">
+                    <i class="bi bi-whatsapp me-2"></i>Submit And Send
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="downloadPdfModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Download Service PDF</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <p class="mb-2">
+                    <strong>Case ID:</strong>
+                    <span id="downloadPdfCaseId">-</span>
+                </p>
+
+                <p class="mb-3">
+                    We are planning to have 1 week of this data after that auto delete to maintain storage.
+                </p>
+
+                <div class="alert alert-info mb-3">
+                    Remaining days:
+                    <strong id="downloadPdfRemainingDays">0</strong>
+                </div>
+
+                <div class="d-grid">
+                    <a href="#" id="downloadPdfButton" class="btn btn-success">
+                        <i class="bi bi-download me-2"></i>Download PDF
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const downloadModal = document.getElementById("downloadPdfModal");
+    const downloadButton = document.getElementById("downloadPdfButton");
+    const editForm = document.getElementById("editRequestForm");
+    const editSubmitButton = document.getElementById("editRequestSubmitButton");
+    const editError = document.getElementById("editRequestError");
+
+    function setFieldValue(name, value) {
+        const field = editForm ? editForm.querySelector('[name="' + name + '"]') : null;
+
+        if (field) {
+            if (name === "mobile_number" && value) {
+                let val = value.replace(/\D/g, '');
+                if (val.length > 5) {
+                    field.value = val.substring(0, 5) + ' ' + val.substring(5, 10);
+                } else {
+                    field.value = val;
+                }
+            } else {
+                field.value = value || "";
+            }
+        }
+    }
+
+    document.querySelectorAll(".js-edit-request").forEach(function (button) {
+        button.addEventListener("click", function () {
+            if (!editForm) {
+                return;
+            }
+
+            editForm.action = button.getAttribute("data-edit-url") || "";
+            setFieldValue("client_id", button.getAttribute("data-client-id"));
+            setFieldValue("work_order_number", button.getAttribute("data-work-order-number"));
+            setFieldValue("customer_name", button.getAttribute("data-customer-name"));
+            setFieldValue("mobile_number", button.getAttribute("data-mobile-number"));
+            setFieldValue("email", button.getAttribute("data-email"));
+            setFieldValue("address", button.getAttribute("data-address"));
+            setFieldValue("ups_model", button.getAttribute("data-ups-model"));
+            setFieldValue("serial_number", button.getAttribute("data-serial-number"));
+            setFieldValue("type_of_call", button.getAttribute("data-type-of-call"));
+            setFieldValue("engineer", button.getAttribute("data-engineer"));
+            editError.classList.add("d-none");
+            editError.textContent = "";
+        });
+    });
+
+    const mobileInput = editForm ? editForm.querySelector('[name="mobile_number"]') : null;
+    if (mobileInput) {
+        mobileInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + ' ' + value.substring(5, 10);
+            } else {
+                value = value.substring(0, 5);
+            }
+            e.target.value = value;
+        });
+    }
+
+    if (editSubmitButton) {
+        editSubmitButton.addEventListener("click", function () {
+            if (!editForm) {
+                return;
+            }
+
+            if (!editForm.checkValidity()) {
+                editForm.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(editForm);
+            editSubmitButton.disabled = true;
+            editSubmitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Sending...';
+
+            fetch(editForm.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    if (!response.ok) {
+                        throw data;
+                    }
+
+                    return data;
+                });
+            })
+            .then(function (data) {
+                const modalElement = document.getElementById("editRequestModal");
+                const modalInstance = modalElement ? bootstrap.Modal.getInstance(modalElement) : null;
+
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+
+                window.open(data.whatsapp, "_blank");
+                window.location.reload();
+            })
+            .catch(function (error) {
+                const errorParts = [];
+
+                if (error && error.errors) {
+                    Object.keys(error.errors).forEach(function (key) {
+                        errorParts.push(key + ": " + error.errors[key].join(", "));
+                    });
+                }
+
+                editError.textContent = errorParts.join(" | ") || error.message || "Unable to update the request.";
+                editError.classList.remove("d-none");
+            })
+            .finally(function () {
+                editSubmitButton.disabled = false;
+                editSubmitButton.innerHTML = '<i class="bi bi-whatsapp me-2"></i>Submit And Send';
+            });
+        });
+    }
+
+    if (!downloadModal) {
+        return;
+    }
+
+    downloadModal.addEventListener("show.bs.modal", function (event) {
+        const trigger = event.relatedTarget;
+
+        document.getElementById("downloadPdfCaseId").textContent = trigger.getAttribute("data-case-id") || "-";
+        document.getElementById("downloadPdfRemainingDays").textContent = trigger.getAttribute("data-remaining-days") || "0";
+        document.getElementById("downloadPdfButton").href = trigger.getAttribute("data-download-url") || "#";
+    });
+
+    if (downloadButton) {
+        downloadButton.addEventListener("click", function () {
+            const modalInstance = bootstrap.Modal.getInstance(downloadModal);
+
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

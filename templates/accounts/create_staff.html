@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+Create Staff
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h3 class="fw-bold">
+
+                Create Staff
+
+            </h3>
+
+            <p class="text-muted">
+
+                Register Admin / Engineer
+
+            </p>
+
+        </div>
+
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger shadow-sm">
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div><strong>{{ field.label }}:</strong> {{ error }}</div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            First Name
+
+                        </label>
+
+                        {{ form.first_name }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Last Name
+
+                        </label>
+
+                        {{ form.last_name }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Username
+
+                        </label>
+
+                        {{ form.username }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Email
+
+                        </label>
+
+                        {{ form.email }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Mobile Number
+
+                        </label>
+
+                        {{ form.mobile_number }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Role
+
+                        </label>
+
+                        {{ form.role }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Status
+
+                        </label>
+
+                        {{ form.is_active }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Password
+
+                        </label>
+
+                        <div class="input-group">
+                            {{ form.password1 }}
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary password-toggle"
+                                data-target="{{ form.password1.id_for_label }}"
+                                aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Confirm Password
+
+                        </label>
+
+                        <div class="input-group">
+                            {{ form.password2 }}
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary password-toggle"
+                                data-target="{{ form.password2.id_for_label }}"
+                                aria-label="Show confirm password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="text-end">
+
+                    <button class="btn btn-success">
+
+                        <i class="bi bi-person-plus-fill me-2"></i>
+
+                        Create User
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".password-toggle").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const target = document.getElementById(button.getAttribute("data-target"));
+
+            if (!target) {
+                return;
+            }
+
+            const isPassword = target.type === "password";
+            target.type = isPassword ? "text" : "password";
+            button.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        });
+    });
+});
+</script>
+{% endblock %}

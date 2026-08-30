@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-6 col-md-8">
+
+            <div class="card shadow">
+
+                <div class="card-header">
+
+                    {{ title }}
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="alert alert-info">
+                        Redirecting to Manage Staff in <strong id="redirectCountdown">10</strong> seconds.
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">Username</label>
+
+                        <input type="text" class="form-control" value="{{ username }}" readonly>
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-bold">Password</label>
+
+                        <input type="text" class="form-control" value="{{ password }}" readonly>
+
+                    </div>
+
+                    <div class="text-end">
+
+                        <a href="{% url 'accounts:manage_staff' %}" class="btn btn-success">
+
+                            <i class="bi bi-arrow-left me-2"></i>Back To Manage Staff
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const countdown = document.getElementById("redirectCountdown");
+    let remainingSeconds = 10;
+
+    const timer = window.setInterval(function () {
+        remainingSeconds -= 1;
+
+        if (countdown) {
+            countdown.textContent = remainingSeconds;
+        }
+
+        if (remainingSeconds <= 0) {
+            window.clearInterval(timer);
+            window.location.href = "{% url 'accounts:manage_staff' %}";
+        }
+    }, 1000);
+});
+</script>
+{% endblock %}

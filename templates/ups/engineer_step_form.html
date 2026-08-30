@@ -1,0 +1,658 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{{ step_title }}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/engineer-steps.css' %}">
+<style>
+.category-trigger-row {
+    align-items: start;
+}
+
+.category-table-wrapper {
+    display: none;
+}
+
+.category-table-wrapper.is-visible {
+    display: block;
+}
+
+.category-table td,
+.category-table th {
+    vertical-align: middle;
+}
+
+.category-table .form-control {
+    min-width: 140px;
+}
+
+.category-table .btn {
+    white-space: nowrap;
+}
+
+.multi-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.75rem;
+}
+
+.multi-image-grid a {
+    display: block;
+}
+
+.multi-image-grid img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+@media (max-width: 576px) {
+    .category-trigger-row .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid engineer-step-page">
+
+    <div class="row mb-3">
+
+        <div class="col-12">
+
+            <h4 class="fw-bold mb-0">
+                {{ step_title }}
+            </h4>
+
+        </div>
+
+    </div>
+
+    <div class="card mb-3">
+
+        <div class="card-body">
+
+            <div class="engineer-step-progress">
+
+                <div class="engineer-step-progress-track">
+
+                    <div class="d-flex engineer-step-progress-list">
+
+                        {% for item in step_progress %}
+
+                            <div class="engineer-step-progress-item {% if item.completed %}completed{% endif %} {% if item.active %}active{% endif %}">
+
+                                <div class="engineer-step-progress-circle">
+                                    {% if item.completed and not item.active %}
+                                        <i class="bi bi-check-lg"></i>
+                                    {% else %}
+                                        {{ item.number }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="engineer-step-progress-label">
+                                    {{ item.number }}
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card mb-3">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                {% for label, value in service_summary %}
+
+                    <div class="{% if label == 'Complaint Details' %}col-12{% else %}col-sm-6{% endif %}">
+
+                        <div class="engineer-step-summary h-100">
+
+                            <span class="engineer-step-summary-label">
+                                {{ label }}
+                            </span>
+
+                            <div class="engineer-step-summary-value {% if label == 'Complaint Details' %}is-complaint{% endif %}">
+                                {{ value }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card mb-4">
+
+        <div class="card-header fw-bold">
+            {{ step_title }}
+        </div>
+
+        <div class="card-body">
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                {% endif %}
+
+                {% for hidden_field in form.hidden_fields %}
+                    {{ hidden_field }}
+                {% endfor %}
+
+                <div class="row g-3">
+
+                    {% for field in form.visible_fields %}
+
+                        {% if field.field.widget.input_type == "checkbox" %}
+
+                            <div class="col-12" data-field-name="{{ field.name }}">
+
+                                <div class="form-check d-flex align-items-start aps-check-item">
+
+                                    {{ field.as_widget|safe }}
+
+                                    <label class="form-check-label flex-grow-1" for="{{ field.id_for_label }}">
+                                        {{ field.label }}
+                                    </label>
+
+                                </div>
+
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                {% endif %}
+
+                            </div>
+
+                        {% else %}
+
+                            {% if field.name == "step_3_system_data" %}
+                            <div class="col-12" data-field-name="{{ field.name }}">
+
+                                <div class="row g-2 category-trigger-row d-none">
+                                    <div class="col-12 col-md-8">
+                                        <label for="{{ field.id_for_label }}" class="form-label">
+                                            {{ field.label }}
+                                        </label>
+                                        <div class="d-none">
+                                            {{ field }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                {% endif %}
+
+                            </div>
+
+                            <div class="col-12">
+                                <div class="card border-0 bg-body-tertiary" id="categoryTableWrapper" style="display: block;">
+                                    <div class="card-body p-3">
+                                        <div class="accordion mb-3" id="checklistAccordion">
+                                            {% for header in "0123456789"|make_list %}
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="heading-{{ forloop.counter0 }}">
+                                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter0 }}" aria-expanded="false" aria-controls="collapse-{{ forloop.counter0 }}">
+                                                        {% if forloop.counter0 == 0 %}1. New Section
+                                                        {% elif forloop.counter0 == 1 %}2. Input On Mains(VAC)
+                                                        {% elif forloop.counter0 == 2 %}3. Battery Reading During Charging(VDC)
+                                                        {% elif forloop.counter0 == 3 %}4. Battery Reading During Discharging(VDC)
+                                                        {% elif forloop.counter0 == 4 %}5. Site Environmental
+                                                        {% elif forloop.counter0 == 5 %}6. Power Conditions
+                                                        {% elif forloop.counter0 == 6 %}7. Battery Bank Description
+                                                        {% elif forloop.counter0 == 7 %}8. UPS Information
+                                                        {% elif forloop.counter0 == 8 %}9. Reading During Charging (voltage)
+                                                        {% elif forloop.counter0 == 9 %}10. Reading During Discharging (Voltage)
+                                                        {% endif %}
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse-{{ forloop.counter0 }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ forloop.counter0 }}" data-bs-parent="#checklistAccordion">
+                                                    <div class="accordion-body p-0">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered align-middle mb-0 category-table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th style="width: 45%;">Properties</th>
+                                                                        <th>Values</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="categoryTableBody-{{ forloop.counter0 }}"></tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                                            <button type="button" class="btn btn-success" id="saveCategoryButton">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% elif field.name == "step_2_model_label_photos" or field.name == "step_4_defective_part_photos" or field.name == "step_5_installed_part_photos" or field.name == "installation_images" %}
+                            <div class="col-12" data-field-name="{{ field.name }}">
+
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.name == "step_2_model_label_photos" and existing_model_serial_images %}
+                                    <div class="multi-image-grid mt-2">
+                                        {% for image in existing_model_serial_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Model/Serial Label Photo {{ forloop.counter }}">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.name == "step_4_defective_part_photos" and existing_defective_images %}
+                                    <div class="multi-image-grid mt-2">
+                                        {% for image in existing_defective_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Defective Part Photo {{ forloop.counter }}">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.name == "step_5_installed_part_photos" and existing_replaced_images %}
+                                    <div class="multi-image-grid mt-2">
+                                        {% for image in existing_replaced_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Replaced Part Photo {{ forloop.counter }}">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.name == "installation_images" and existing_installation_images %}
+                                    <div class="multi-image-grid mt-2">
+                                        {% for image in existing_installation_images %}
+                                            <a href="{{ image.url }}" target="_blank">
+                                                <img src="{{ image.url }}" alt="Installation Image {{ forloop.counter }}">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                {% endif %}
+
+                            </div>
+                            {% else %}
+                            <div class="col-12" data-field-name="{{ field.name }}">
+
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+
+                                {% if field.field.widget.input_type == "file" %}
+                                    {% for existing_file in existing_files %}
+                                        {% if existing_file.name == field.name %}
+                                            <div class="existing-file-preview mt-2">
+                                                <img src="{{ existing_file.url }}" alt="{{ field.label }}">
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                {% endif %}
+
+                            </div>
+                            {% endif %}
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+
+                    <button type="submit" class="btn btn-success">
+                        {{ submit_label }}
+                    </button>
+
+                    <a href="{% url 'ups:close_call_list' %}" class="btn btn-outline-secondary">
+                        Back to Open Calls
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const partDecision = document.getElementById("id_step_4_part_decision");
+    const conditionalFields = [
+        document.querySelector('[data-field-name="step_5_installed_part_photos"]'),
+        document.querySelector('[data-field-name="step_5_new_part_model_number"]'),
+        document.querySelector('[data-field-name="step_5_new_part_serial_number"]')
+    ];
+    const categoryTableWrapper = document.getElementById("categoryTableWrapper");
+    const checklistAccordion = document.getElementById("checklistAccordion");
+    const addCategoryButton = document.getElementById("addCategoryButton");
+    const addCategoryRowButton = document.getElementById("addCategoryRowButton");
+    const saveCategoryButton = document.getElementById("saveCategoryButton");
+    const categoryDataInput = document.getElementById("id_step_3_category_data");
+    const initialCategoryRows = JSON.parse('{{ category_rows_json|escapejs }}');
+
+    function togglePartFields() {
+        if (!partDecision) {
+            return;
+        }
+
+        const showAvailableFields = partDecision.value === "AVAILABLE";
+
+        conditionalFields.forEach(function (fieldWrapper) {
+            if (!fieldWrapper) {
+                return;
+            }
+
+            fieldWrapper.style.display = showAvailableFields ? "" : "none";
+        });
+    }
+
+    if (partDecision) {
+        partDecision.addEventListener("change", togglePartFields);
+        togglePartFields();
+    }
+
+    const PREDEFINED_PROPERTIES = [
+        // Product Details
+        "Product Type",
+        "Unit Status",
+        "Call Type",
+        "Any near-miss reported",
+        "If Yes? Please mention details",
+
+        // Input on Mains (VAC)
+        "Voltage L1-N",
+        "Voltage L2-N",
+        "Voltage L3-N",
+        "Voltage N-E",
+
+        // Battery Reading During Charging (VDC)
+        "Battery One Voltage (Charging)",
+        "Battery Two Voltage (Charging)",
+
+        // Battery Reading During Discharging (VDC)
+        "Battery One Voltage (Discharging)",
+        "Battery Two Voltage (Discharging)",
+
+        // Site - Environmental Details
+        "AC PROVIDED",
+        "DG PROVIDED",
+        "IS ENVIRONMENT DUSTY?",
+        "Location where UPS installed",
+        "Connected Load",
+        "Any other site related point, then please specify",
+
+        // Power Conditions
+        "No of Power Failures in a Day",
+        "Duration of Power Failures in a day",
+        "I/P Wire (sqmm.)",
+        "O/P Wire (sqmm.)",
+        "I/P MCB (Amps)",
+        "O/P MCB (Amps)",
+        "Operation during non-business hours",
+        "Battery Configuration",
+        "Degradation done",
+        "Restart done and verified the DG voltage and found OK",
+
+        // Battery Bank Description
+        "Battery Bank Make",
+        "Battery Bank Ah",
+        "Battery Bank Qty",
+        "Battery Bank Ageing/Batch Code",
+
+        // UPS Information
+        "Product Rating",
+        "UPS Configuration",
+        "Input - Output Configuration",
+        "Output Voltage",
+        "No of Units",
+        "NMC Model",
+        "NMC Sr. No.",
+        "Operation during visit",
+        "Charge %",
+        "Fault Code",
+
+        // Reading during charging (Voltage) - B1 to B32
+        ...Array.from({length: 32}, (_, i) => `Charging Voltage B${i+1}`),
+        "Charging Current (amps)",
+
+        // Reading during discharging (Voltage) - B1 to B32
+        ...Array.from({length: 32}, (_, i) => `Discharging Voltage B${i+1}`),
+        "Discharging Current (amps)",
+        "Remarks (if any) for Battery"
+    ];
+
+    const PROPERTY_TO_SECTION = {
+        "Product Type": 0,
+        "Unit Status": 0,
+        "Call Type": 0,
+        "Any near-miss reported": 0,
+        "If Yes? Please mention details": 0,
+        "Voltage L1-N": 1,
+        "Voltage L2-N": 1,
+        "Voltage L3-N": 1,
+        "Voltage N-E": 1,
+        "Battery One Voltage (Charging)": 2,
+        "Battery Two Voltage (Charging)": 2,
+        "Battery One Voltage (Discharging)": 3,
+        "Battery Two Voltage (Discharging)": 3,
+        "AC PROVIDED": 4,
+        "DG PROVIDED": 4,
+        "IS ENVIRONMENT DUSTY?": 4,
+        "Location where UPS installed": 4,
+        "Connected Load": 4,
+        "Any other site related point, then please specify": 4,
+        "No of Power Failures in a Day": 5,
+        "Duration of Power Failures in a day": 5,
+        "I/P Wire (sqmm.)": 5,
+        "O/P Wire (sqmm.)": 5,
+        "I/P MCB (Amps)": 5,
+        "O/P MCB (Amps)": 5,
+        "Operation during non-business hours": 5,
+        "Battery Configuration": 5,
+        "Degradation done": 5,
+        "Restart done and verified the DG voltage and found OK": 5,
+        "Battery Bank Make": 6,
+        "Battery Bank Ah": 6,
+        "Battery Bank Qty": 6,
+        "Battery Bank Ageing/Batch Code": 6,
+        "Product Rating": 7,
+        "UPS Configuration": 7,
+        "Input - Output Configuration": 7,
+        "Output Voltage": 7,
+        "No of Units": 7,
+        "NMC Model": 7,
+        "NMC Sr. No.": 7,
+        "Operation during visit": 7,
+        "Charge %": 7,
+        "Fault Code": 7,
+        "Charging Current (amps)": 8,
+        "Discharging Current (amps)": 9,
+        "Remarks (if any) for Battery": 9
+    };
+
+    function buildCategoryRow(typeValue = "", descriptionValue = "") {
+        let secIndex = PROPERTY_TO_SECTION[typeValue];
+        if (secIndex === undefined) {
+            if (typeValue.startsWith("Charging Voltage B")) {
+                secIndex = 8;
+            } else if (typeValue.startsWith("Discharging Voltage B")) {
+                secIndex = 9;
+            } else {
+                secIndex = 0;
+            }
+        }
+
+        const tbody = document.getElementById(`categoryTableBody-${secIndex}`);
+        if (!tbody) {
+            return;
+        }
+
+        const row = document.createElement("tr");
+        const typeCell = document.createElement("td");
+        typeCell.style.width = "45%";
+        
+        const typeLabel = document.createElement("span");
+        typeLabel.textContent = typeValue;
+        typeLabel.className = "fw-semibold";
+        typeCell.appendChild(typeLabel);
+
+        const typeInput = document.createElement("input");
+        typeInput.type = "hidden";
+        typeInput.setAttribute("data-category-type", "");
+        typeInput.value = typeValue;
+        typeCell.appendChild(typeInput);
+
+        const descriptionCell = document.createElement("td");
+        const descriptionInput = document.createElement("input");
+        descriptionInput.type = "text";
+        descriptionInput.className = "form-control";
+        descriptionInput.setAttribute("data-category-description", "");
+        descriptionInput.value = descriptionValue;
+        descriptionInput.placeholder = "Enter value";
+        descriptionCell.appendChild(descriptionInput);
+
+        row.appendChild(typeCell);
+        row.appendChild(descriptionCell);
+        tbody.appendChild(row);
+    }
+
+    function saveCategories() {
+        if (!categoryDataInput) {
+            return;
+        }
+
+        const rows = Array.from(document.querySelectorAll("[data-category-type]")).map(function (input) {
+            const row = input.closest("tr");
+            const tVal = input.value.trim();
+            const dVal = row.querySelector("[data-category-description]").value.trim();
+            return {
+                type: tVal,
+                description: dVal
+            };
+        }).filter(function (row) {
+            return row.description !== "";
+        });
+
+        categoryDataInput.value = JSON.stringify(rows);
+
+        const systemDataValue = rows.map(function (row) {
+            return `${row.type || "-"}: ${row.description || "-"}`;
+        }).join("\n");
+
+        const systemDataInput = document.getElementById("id_step_3_system_data");
+        if (systemDataInput) {
+            systemDataInput.value = systemDataValue;
+        }
+    }
+
+    if (checklistAccordion) {
+        const initialMap = {};
+        if (initialCategoryRows && initialCategoryRows.length) {
+            initialCategoryRows.forEach(function (row) {
+                if (row.type) {
+                    initialMap[row.type] = row.description || "";
+                }
+            });
+        }
+
+        PREDEFINED_PROPERTIES.forEach(function (prop) {
+            const savedValue = initialMap[prop] || "";
+            buildCategoryRow(prop, savedValue);
+        });
+    }
+
+    if (saveCategoryButton) {
+        saveCategoryButton.addEventListener("click", saveCategories);
+    }
+
+    const form = document.querySelector("form");
+    if (form) {
+        form.addEventListener("submit", saveCategories);
+    }
+
+    // Format mobile number format XXXXX XXXXX as they type (for step 6)
+    const mobileInput = document.querySelector('input[name="mobile_number"]');
+    if (mobileInput) {
+        mobileInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + ' ' + value.substring(5, 10);
+            } else {
+                value = value.substring(0, 5);
+            }
+            e.target.value = value;
+        });
+
+        if (mobileInput.value) {
+            let val = mobileInput.value.replace(/\D/g, '');
+            if (val.length > 5) {
+                mobileInput.value = val.substring(0, 5) + ' ' + val.substring(5, 10);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,121 @@
+html[data-bs-theme="dark"]{
+
+    background:var(--dark-bg);
+
+}
+
+html[data-bs-theme="dark"] body{
+
+    background:var(--dark-bg);
+
+    color:var(--dark-text);
+
+}
+
+html[data-bs-theme="dark"] .navbar{
+
+    background:var(--dark-card);
+
+    border-bottom:1px solid #444;
+
+}
+
+html[data-bs-theme="dark"] #sidebar{
+
+    background:var(--dark-card);
+
+    border-right:1px solid #444;
+
+}
+
+html[data-bs-theme="dark"] .card{
+
+    background:var(--dark-card);
+
+    color:var(--dark-text);
+
+}
+
+html[data-bs-theme="dark"] .card-header{
+
+    background:var(--dark-card);
+
+}
+
+html[data-bs-theme="dark"] .table{
+
+    color:white;
+
+}
+
+html[data-bs-theme="dark"] footer{
+
+    background:var(--dark-card);
+
+    color:white;
+
+}
+
+html[data-bs-theme="dark"] .app-footer{
+
+    border-top:1px solid #444;
+
+}
+
+html[data-bs-theme="dark"] .footer-text{
+
+    color:#d0d0d0;
+
+}
+
+html[data-bs-theme="dark"] .nav-link{
+
+    color:#ddd !important;
+
+}
+
+html[data-bs-theme="dark"] .navbar-login-links{
+
+    background:var(--dark-card);
+
+    border-color:#444;
+
+}
+
+html[data-bs-theme="dark"] .navbar-brand-logo-light{
+
+    display:none;
+
+}
+
+html[data-bs-theme="dark"] .navbar-brand-logo-dark{
+
+    display:block;
+
+}
+
+html[data-bs-theme="dark"] .form-control,
+
+html[data-bs-theme="dark"] .form-select{
+
+    background:#333;
+
+    color:white;
+
+    border-color:#555;
+
+}
+
+html[data-bs-theme="dark"] .form-control::placeholder{
+
+    color:#bbb;
+
+}
+
+html[data-bs-theme="dark"] .modal-content{
+
+    background:var(--dark-card);
+
+    color:white;
+
+}

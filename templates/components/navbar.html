@@ -1,0 +1,97 @@
+<nav class="navbar navbar-expand-lg shadow-sm sticky-top border-bottom">
+
+    <div class="container-fluid">
+
+        {% if user.is_authenticated %}
+
+            <button class="btn border-0 d-lg-none me-2" id="menuButton">
+
+                <i class="bi bi-list fs-3"></i>
+
+            </button>
+
+        {% endif %}
+
+        <a class="navbar-brand fw-bold text-success" href="/">
+
+            <span class="navbar-brand-logo-wrap">
+                <img src="/media/logos/aps-light.jpeg" alt="APS" class="navbar-brand-logo navbar-brand-logo-light">
+                <img src="/media/logos/aps-dark.png" alt="APS" class="navbar-brand-logo navbar-brand-logo-dark">
+            </span>
+
+            <span class="navbar-brand-text">
+                APS
+            </span>
+
+        </a>
+
+        <div class="d-flex align-items-center navbar-actions ms-auto">
+
+            {% if user.is_authenticated %}
+
+                <span class="nav-welcome me-3">
+                    Welcome,
+                    <strong>{{ user.first_name|default:user.username }}</strong>
+                </span>
+
+            {% endif %}
+
+            {% if not user.is_authenticated %}
+
+                <div class="collapse navbar-collapse navbar-login-links" id="navbarContent">
+
+                    <ul class="navbar-nav align-items-lg-center">
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="{% url 'accounts:login' %}">
+
+                                Admin Login
+
+                            </a>
+
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="{% url 'accounts:engineer_login' %}">
+
+                                Engineer Login
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            {% endif %}
+
+            <button
+                class="btn border-0 navbar-theme-button"
+                id="themeButton"
+                type="button">
+
+                <i class="bi bi-moon-fill"></i>
+
+            </button>
+
+        </div>
+
+        {% if not user.is_authenticated %}
+
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarContent">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+        {% endif %}
+
+    </div>
+
+</nav>

@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h3 class="fw-bold">
+                Dashboard
+            </h3>
+
+            <p class="text-muted">
+                Welcome {{ request.user.first_name|default:request.user.username }}
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        {% if request.user.role == 'SUPERADMIN' %}
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'ups:create_form' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-file-earmark-plus display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            Create Form
+                        </h5>
+
+                        <p class="text-muted">
+                            Create New Service Request
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'ups:view_form' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-search display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            View Form
+                        </h5>
+
+                        <p class="text-muted">
+                            Search Existing Request
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'accounts:create_staff' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-person-plus display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            Create Staff
+                        </h5>
+
+                        <p class="text-muted">
+                            Register Admin / Engineer
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'accounts:manage_staff' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-people display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            Manage Staff
+                        </h5>
+
+                        <p class="text-muted">
+                            Update Staff Accounts
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'accounts:organization_profile' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-building display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            Organization Profile
+                        </h5>
+
+                        <p class="text-muted">
+                            View Account Summary
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% elif request.user.role == 'ADMIN' %}
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'ups:create_form' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-file-earmark-plus display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            Create Form
+                        </h5>
+
+                        <p class="text-muted">
+                            Create New Service Request
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <a href="{% url 'ups:view_form' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center">
+
+                        <i class="bi bi-search display-4 text-success"></i>
+
+                        <h5 class="mt-3">
+                            View Form
+                        </h5>
+
+                        <p class="text-muted">
+                            Search Existing Request
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% else %}
+
+        <!-- Engineer Dashboard Cards -->
+
+        <div class="col-md-6">
+
+            <a href="{% url 'ups:my_calls' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center py-5">
+
+                        <i class="bi bi-list-check display-3 text-success"></i>
+
+                        <h4 class="mt-3 fw-bold">
+                            My Calls
+                        </h4>
+
+                        <p class="text-muted">
+                            View Your Assigned Calls
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <a href="{% url 'ups:close_call_list' %}" class="text-decoration-none">
+
+                <div class="card h-100">
+
+                    <div class="card-body text-center py-5">
+
+                        <i class="bi bi-check-circle display-3 text-success"></i>
+
+                        <h4 class="mt-3 fw-bold">
+                            Close Call
+                        </h4>
+
+                        <p class="text-muted">
+                            Submit Completion Report
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

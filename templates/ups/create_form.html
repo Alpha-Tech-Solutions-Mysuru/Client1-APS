@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Service Request
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h3 class="fw-bold">
+                Create Service Complaint
+            </h3>
+
+            <p class="text-muted">
+                Register customer requests and assign field tasks to registered engineers.
+            </p>
+
+        </div>
+
+    </div>
+
+    {% if form.errors %}
+
+    <div class="alert alert-danger shadow-sm">
+
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+
+            {% for error in field.errors %}
+
+                <div><strong>{{ field.label }}:</strong> {{ error }}</div>
+
+            {% endfor %}
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+    <div class="card shadow border-0">
+
+        <div class="card-body p-4">
+
+            <form method="post" id="serviceForm">
+
+                {% csrf_token %}
+
+                <h5 class="fw-bold text-success mb-4">Service Call Form</h5>
+
+                <div class="row mb-4">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-bold">Case ID *</label>
+
+                        {{ form.client_id }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-bold">Work Order Number *</label>
+
+                        {{ form.work_order_number }}
+
+                    </div>
+
+                </div>
+
+                <h6 class="fw-bold text-success mb-3">Customer Details</h6>
+
+                <div class="row mb-4">
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">Customer Name *</label>
+
+                        {{ form.customer_name }}
+
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">Customer Number *</label>
+
+                        {{ form.mobile_number }}
+
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">Customer Email ID</label>
+
+                        {{ form.email }}
+
+                    </div>
+
+                    <div class="col-12 mb-3">
+
+                        <label class="form-label fw-bold">Address</label>
+
+                        {{ form.address }}
+
+                    </div>
+
+                </div>
+
+                <h6 class="fw-bold text-success mb-3">Equipment Details</h6>
+
+                <div class="row mb-4">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-bold">UPS Model *</label>
+
+                        {{ form.ups_model }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-bold">UPS Serial Number *</label>
+
+                        {{ form.serial_number }}
+
+                    </div>
+
+                </div>
+
+                <h6 class="fw-bold text-success mb-3">Assignment Details</h6>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-4">
+
+                        <label class="form-label fw-bold">Type Of Call *</label>
+
+                        {{ form.type_of_call }}
+
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+
+                        <label class="form-label fw-bold">Engineer *</label>
+
+                        {{ form.engineer }}
+
+                    </div>
+
+                </div>
+
+                <div class="text-end">
+
+                    <button type="button" class="btn btn-success btn-lg" onclick="showPreviewModal()">
+
+                        <i class="bi bi-eye-fill me-2"></i> Preview & Submit
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title fw-bold text-success" id="previewModalLabel">
+
+                    <i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Preview Service Request
+
+                </h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="alert alert-success shadow-sm mb-3">
+
+                    <i class="bi bi-info-circle-fill me-2"></i> Verify the WhatsApp message text below. Clicking <strong>Send</strong> will save the service request and open WhatsApp Web to send this text to the selected engineer.
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">Assigned Engineer:</label>
+
+                    <span id="prev-engineer" class="fw-semibold text-success ms-2"></span>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">WhatsApp Message Preview:</label>
+
+                    <pre id="whatsapp-preview-text" class="bg-body-secondary p-3 border rounded font-monospace text-body-emphasis mb-0" style="white-space: pre-wrap; font-size: 14px;"></pre>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <button type="button" id="modalSubmitButton" class="btn btn-success">
+
+                    <i class="bi bi-whatsapp me-2"></i> Send
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+let myModal;
+
+document.addEventListener("DOMContentLoaded", function () {
+    const mobileInput = document.querySelector('input[name="mobile_number"]');
+    if (mobileInput) {
+        mobileInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + ' ' + value.substring(5, 10);
+            } else {
+                value = value.substring(0, 5);
+            }
+            e.target.value = value;
+        });
+
+        if (mobileInput.value) {
+            let val = mobileInput.value.replace(/\D/g, '');
+            if (val.length > 5) {
+                mobileInput.value = val.substring(0, 5) + ' ' + val.substring(5, 10);
+            }
+        }
+    }
+});
+
+function showPreviewModal() {
+    const form = document.getElementById("serviceForm");
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const caseId = document.querySelector('[name="client_id"]')?.value || "";
+    const workOrder = document.querySelector('[name="work_order_number"]')?.value || "";
+    const customer = document.querySelector('[name="customer_name"]')?.value || "";
+    const mobile = document.querySelector('[name="mobile_number"]')?.value || "";
+    const email = document.querySelector('[name="email"]')?.value || "";
+    const address = document.querySelector('[name="address"]')?.value || "";
+    const callTypeSelect = document.querySelector('[name="type_of_call"]');
+    const callType = callTypeSelect && callTypeSelect.options[callTypeSelect.selectedIndex] ? callTypeSelect.options[callTypeSelect.selectedIndex].text : "-";
+    const model = document.querySelector('[name="ups_model"]')?.value || "";
+    const serial = document.querySelector('[name="serial_number"]')?.value || "";
+
+    const engSelect = document.querySelector('[name="engineer"]');
+    const engName = engSelect && engSelect.options[engSelect.selectedIndex] ? engSelect.options[engSelect.selectedIndex].text : "-";
+
+    const prevEngineer = document.getElementById("prev-engineer");
+    if (prevEngineer) {
+        prevEngineer.textContent = engName;
+    }
+
+    const msg = `APS SERVICE REQUEST
+
+Client ID : ${caseId}
+
+Work Order : ${workOrder}
+
+Customer : ${customer}
+
+Mobile : ${mobile}
+
+Email : ${email || "-"}
+
+Address : ${address || "-"}
+
+Type Of Call : ${callType}
+
+UPS Model : ${model}
+
+Serial No : ${serial}
+
+Regards,
+APS`;
+
+    const prevText = document.getElementById("whatsapp-preview-text");
+    if (prevText) {
+        prevText.textContent = msg;
+    }
+
+    const modalEl = document.getElementById("previewModal");
+    myModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    myModal.show();
+}
+
+document.getElementById("modalSubmitButton").addEventListener("click", function() {
+    const form = document.getElementById("serviceForm");
+    const formData = new FormData(form);
+    const modalSubmitBtn = document.getElementById("modalSubmitButton");
+
+    modalSubmitBtn.disabled = true;
+    modalSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending...';
+
+    fetch("", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Service Request Created Successfully.");
+            if (myModal) {
+                myModal.hide();
+            }
+            window.open(data.whatsapp, "_blank");
+            window.location.href = "{% url 'ups:view_form' %}";
+        } else {
+            alert("Failed to create request: " + JSON.stringify(data.errors));
+            modalSubmitBtn.disabled = false;
+            modalSubmitBtn.innerHTML = '<i class="bi bi-whatsapp me-2"></i> Send';
+        }
+    })
+    .catch(err => {
+        alert("An error occurred during submission: " + err);
+        modalSubmitBtn.disabled = false;
+        modalSubmitBtn.innerHTML = '<i class="bi bi-whatsapp me-2"></i> Send';
+    });
+});
+</script>
+{% endblock %}
